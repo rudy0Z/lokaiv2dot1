@@ -1,0 +1,615 @@
+/* Base layer — only place besides tokens.css allowed to hold raw values. */
+
+/* Default hairline colour. MUST sit in the base cascade layer: unlayered it
+   out-ranked every layered Tailwind utility, so border-warning-line,
+   border-positive-line, border-brand-line etc. silently rendered as the
+   neutral hairline. Inside @layer base (imported after Tailwind's preflight)
+   it still replaces preflight's currentColor default. */
+@layer base {
+  * {
+    border-color: var(--c-line-default);
+  }
+
+  /* Mixed-script content (A4b): `font-family` is computed once on <body>, so
+     a lang-scoped element (a Hindi case title inside an English UI) would
+     inherit the Inter stack and never reach its bundled Noto/Nastaliq face —
+     only OS fallback, or tofu where none exists. Re-resolve the script stack
+     on every lang-scoped element; serif/mono contexts keep their register.
+     Layered, so font-* utilities on the element itself still win. */
+  [lang]:not(html) {
+    font-family: var(--stk-sans);
+  }
+  .font-serif [lang],
+  [lang].font-serif {
+    font-family: var(--stk-serif);
+  }
+  .font-mono [lang],
+  [lang].font-mono {
+    font-family: var(--stk-mono);
+  }
+}
+
+html {
+  background-color: var(--c-page);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+body {
+  margin: 0;
+  background: var(--c-page);
+  color: var(--c-fg-primary);
+  font-family: var(--stk-sans);
+  font-size: 1rem; /* 16px — the iOS zoom floor for inputs */
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Press physics (craft.gustavofior.com/button-press):
+   Scale down to 0.97 on press over 100ms ease-out; transition transform only
+   so press timing does not leak into hover background colors. */
+@media (hover: hover) and (pointer: fine) {
+  .pressable:hover,
+  .pressable-card:hover {
+    filter: brightness(0.985);
+  }
+}
+.pressable {
+  transition: transform 100ms ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+.pressable:not(:disabled):active {
+  transform: scale(0.97);
+}
+.pressable:disabled {
+  transform: none;
+}
+
+/* Subtle press for larger card surfaces (0.985 scale to prevent edge jump) */
+.pressable-card {
+  transition: transform 100ms ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+.pressable-card:not(:disabled):active {
+  transform: scale(0.985);
+}
+.pressable-card:disabled {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pressable,
+  .pressable-card {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* Latin-only display niceties are opt-in per element (.latin-track);
+   NEVER applied to non-Latin text (A4b rule 4). */
+.latin-track {
+  letter-spacing: 0.01em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--c-brand-subtle);
+  color: var(--c-on-brand-subtle);
+}
+
+/* theme-switch suppression (better-ui recipe): every color transition on the
+   page would fire at once during the ivory<->night swap */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
+}
+
+/* Thin, calm scrollbars inside the app frame */
+.scroll-calm {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-line-strong) transparent;
+}
+.scroll-calm::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-calm::-webkit-scrollbar-thumb {
+  background: var(--c-line-strong);
+  border-radius: 999px;
+}
+
+/* Document stationery register — functional paper for generated documents
+   and receipts ONLY (A4). Ruled lines are part of the paper metaphor. */
+.paper {
+  position: relative;
+  isolation: isolate;
+  background: var(--c-paper);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 27px,
+    rgb(70 60 40 / 0.055) 27px,
+    rgb(70 60 40 / 0.055) 28px
+  );
+  color: oklch(24% 0.02 80);
+}
+
+/* Craft noise overlay (craft.gustavofior.com/noise):
+   Tiled 200px SVG fractal noise adds physical bond-paper grain without repainting */
+.paper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  background-repeat: repeat;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Craft tabular figures (craft.gustavofior.com/tabular-numbers):
+   Uniform digit widths for steady changing values (amounts, timestamps, counters) */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================================
+   Mobile Device Chassis — frames the 390px prototype on all standard viewports
+   so it reads immediately as an authentic handheld companion.
+   ============================================================================ */
+.device-chassis {
+  position: relative;
+  padding: 10px;
+  border-radius: 52px;
+  background: linear-gradient(
+    160deg,
+    oklch(28% 0.018 165) 0%,
+    oklch(19% 0.016 165) 50%,
+    oklch(15% 0.015 165) 100%
+  );
+  box-shadow:
+    0 0 0 1px oklch(36% 0.02 165 / 0.7),
+    0 24px 60px -12px rgb(12 20 15 / 0.38),
+    0 8px 24px -6px rgb(12 20 15 / 0.22),
+    inset 0 1px 1px rgb(255 255 255 / 0.14);
+}
+[data-theme="dark"] .device-chassis {
+  background: linear-gradient(
+    160deg,
+    oklch(30% 0.02 165) 0%,
+    oklch(21% 0.018 165) 55%,
+    oklch(16% 0.015 165) 100%
+  );
+  box-shadow:
+    0 0 0 1px oklch(42% 0.025 165 / 0.55),
+    0 28px 70px -10px rgb(0 0 0 / 0.72),
+    0 10px 28px -6px rgb(0 0 0 / 0.5),
+    inset 0 1px 1px rgb(255 255 255 / 0.16);
+}
+.device-screen {
+  border-radius: 42px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+}
+.device-island {
+  background: oklch(14% 0.012 165);
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.12);
+}
+.device-button-left,
+.device-button-right {
+  position: absolute;
+  width: 3px;
+  background: oklch(25% 0.018 165);
+  pointer-events: none;
+}
+.device-button-left {
+  inset-inline-start: -3px;
+  border-start-start-radius: 3px;
+  border-end-start-radius: 3px;
+}
+.device-button-right {
+  inset-inline-end: -3px;
+  border-start-end-radius: 3px;
+  border-end-end-radius: 3px;
+}
+
+/* Craft scroll fades (craft.gustavofior.com/scroll-fades):
+   Dissolve the scrolling edge so users perceive continuity rather than an abrupt cut */
+.scroll-fade-y {
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    black 24px,
+    black calc(100% - 24px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    black 24px,
+    black calc(100% - 24px),
+    transparent 100%
+  );
+}
+
+.scroll-fade-x {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 12px,
+    black calc(100% - 12px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 12px,
+    black calc(100% - 12px),
+    transparent 100%
+  );
+}
+
+/* deep-audit P1-7: form fields do not inherit color by default — without
+   this the dark theme's near-white ink lands on the light paper register
+   and the demand-notice review becomes illegible */
+.paper input,
+.paper textarea {
+  color: inherit;
+  caret-color: inherit;
+}
+
+/* skeuomorphic tactility (master prompt Part 6): the paper register casts a
+   soft two-layer shadow and carries a hairline warm inner highlight */
+.paper {
+  box-shadow:
+    inset 0 0.5px 0 rgb(255 255 255 / 0.5),
+    0 1px 2px rgb(0 0 0 / 0.04),
+    0 8px 24px -4px rgb(20 25 20 / 0.08);
+}
+
+/* staggered reveal for evidence items inside a folder / vault — 40ms steps
+   on the same ease curve the product uses for disclosures */
+.stagger-in > * {
+  animation: stagger-rise 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.stagger-in > *:nth-child(2) { animation-delay: 40ms; }
+.stagger-in > *:nth-child(3) { animation-delay: 80ms; }
+.stagger-in > *:nth-child(4) { animation-delay: 120ms; }
+.stagger-in > *:nth-child(5) { animation-delay: 160ms; }
+.stagger-in > *:nth-child(6) { animation-delay: 200ms; }
+.stagger-in > *:nth-child(n + 7) { animation-delay: 240ms; }
+@keyframes stagger-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stagger-in > * {
+    animation: none;
+  }
+}
+
+/* Urdu / Nastaliq needs generous leading everywhere it appears */
+:lang(ur),
+:lang(ks),
+:lang(sd) {
+  line-height: 2.15;
+}
+
+/* ============================================================================
+   VoiceOrb — THE signature element (DESIGN.md), 2026-11 rebuild.
+   Crisp geometry instead of blurred radial blobs (which smeared into a muddy
+   halo on the warm canvas): a hairline guide ring, a raised disc, and a
+   solid ink core with one soft top light. State is told by motion, not by
+   more gradient — breathe (idle), ripple (listening), arc (thinking).
+   ============================================================================ */
+.voice-orb {
+  --orb-core: var(--c-ink);
+  --orb-icon: var(--c-on-ink);
+  --orb-accent: var(--c-brand-solid);
+  position: relative;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+.voice-orb--lg {
+  width: 184px;
+  height: 184px;
+}
+.voice-orb--md {
+  width: 128px;
+  height: 128px;
+}
+.orb-guide {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 1px solid var(--c-line-default);
+  pointer-events: none;
+}
+.orb-disc {
+  position: absolute;
+  inset: 13%;
+  border-radius: 9999px;
+  background: var(--c-card);
+  border: 1px solid var(--c-line-subtle);
+  box-shadow:
+    0 1px 2px rgb(20 30 24 / 0.05),
+    0 14px 36px -10px rgb(20 34 26 / 0.22);
+  pointer-events: none;
+}
+.orb-core {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 52%;
+  height: 52%;
+  border-radius: 9999px;
+  color: var(--orb-icon);
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgb(255 255 255 / 0.16), transparent 55%),
+    var(--orb-core);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    0 6px 14px -4px rgb(14 26 20 / 0.38);
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* idle: the guide ring breathes, slowly */
+.voice-orb--idle .orb-guide {
+  animation: orb-breathe 4.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@keyframes orb-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.035);
+    opacity: 0.55;
+  }
+}
+
+/* listening: crisp ripples leave the disc edge; the core keeps a pulse */
+.orb-ring {
+  position: absolute;
+  inset: 13%;
+  border-radius: 9999px;
+  border: 1.5px solid var(--orb-accent);
+  opacity: 0;
+  animation: orb-ripple 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  pointer-events: none;
+}
+.orb-ring--b {
+  animation-delay: 0.8s;
+}
+.orb-ring--c {
+  animation-delay: 1.6s;
+}
+@keyframes orb-ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  100% {
+    transform: scale(1.38);
+    opacity: 0;
+  }
+}
+.voice-orb--listening .orb-core {
+  animation: orb-level 1.2s ease-in-out infinite;
+}
+@keyframes orb-level {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+/* thinking: one thin arc travels the guide ring */
+.orb-activity {
+  position: absolute;
+  inset: 6%;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  border-top-color: var(--orb-accent);
+  animation: orb-spin 1.1s linear infinite;
+  pointer-events: none;
+}
+@keyframes orb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voice-orb .orb-guide,
+  .voice-orb .orb-ring,
+  .voice-orb .orb-core,
+  .voice-orb .orb-activity {
+    animation: none !important;
+  }
+  .orb-ring--a {
+    opacity: 0.35;
+    transform: scale(1.16);
+  }
+}
+
+/* ============================================================================
+   Streaming caret — v1 law: solid block, blinks while streaming, leaves
+   after the rest period. Reduced motion: caret suppressed entirely.
+   ============================================================================ */
+.stream-caret {
+  display: inline-block;
+  width: 0.5em;
+  height: 1.05em;
+  margin-inline-start: 2px;
+  border-radius: 1.5px;
+  background: var(--c-brand-solid);
+  vertical-align: text-bottom;
+  animation: caret-blink 1.06s steps(1) infinite;
+}
+@keyframes caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stream-caret {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   Document scan beat (ported from v1 ScanDocument, botanical reskin):
+   a green energy bar with a soft trailing tail sweeps the paper page.
+   ============================================================================ */
+.scan-page {
+  position: relative;
+  overflow: hidden;
+}
+.scan-bar {
+  position: absolute;
+  inset-inline: 10%;
+  top: 6%;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to bottom,
+    var(--c-brand-solid) 0%,
+    oklch(52% 0.07 160 / 0.45) 55%,
+    transparent 100%
+  );
+  box-shadow: 0 0 18px oklch(52% 0.07 160 / 0.5);
+  animation: scan-sweep 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes scan-sweep {
+  0% {
+    top: 6%;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    top: 94%;
+    opacity: 0;
+  }
+}
+.scan-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    oklch(60% 0.06 160 / 0.07) 50%,
+    transparent 100%
+  );
+  background-size: 100% 46%;
+  background-repeat: no-repeat;
+  animation: scan-glow 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes scan-glow {
+  0% {
+    background-position: 0 -46%;
+  }
+  100% {
+    background-position: 0 146%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scan-bar,
+  .scan-page::before {
+    animation: none !important;
+    opacity: 0.35;
+  }
+}
+
+/* ============================================================================
+   Listening waveform — deterministic bar dance, green ink. Reduced motion
+   holds a static mid-wave.
+   ============================================================================ */
+.waveform {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 28px;
+}
+.wave-bar {
+  width: 3px;
+  border-radius: 999px;
+  background: var(--c-brand-solid);
+  height: 30%;
+  animation: wave-dance 1.05s ease-in-out infinite;
+}
+.wave-bar:nth-child(4n + 1) {
+  animation-delay: 0.12s;
+}
+.wave-bar:nth-child(4n + 2) {
+  animation-delay: 0.28s;
+  height: 62%;
+}
+.wave-bar:nth-child(4n + 3) {
+  animation-delay: 0.05s;
+  height: 88%;
+}
+.wave-bar:nth-child(4n) {
+  animation-delay: 0.36s;
+  height: 46%;
+}
+@keyframes wave-dance {
+  0%,
+  100% {
+    transform: scaleY(0.55);
+  }
+  50% {
+    transform: scaleY(1.15);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wave-bar {
+    animation: none !important;
+    height: 55%;
+  }
+}
+
+/* reduced-motion: the targeted blocks above (pressable, stagger, orb,
+   caret, scan, waveform) already collapse motion — a global 0.01ms kill
+   here destroyed opacity/color feedback and dead-coded those blocks
+   (DESIGN-AUDIT P2-1, per Emil's "reduced = fewer/gentler, not zero") */

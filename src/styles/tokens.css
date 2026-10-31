@@ -1,0 +1,442 @@
+/* ============================================================================
+   LokAI v2 token system — "warm white / night garden"
+   2026-11 refresh: cream chroma pulled to ~0.004 so surfaces read as clean
+   warm white; parchment survives ONLY on --c-paper (documents).
+   Re-pointed 2026-10-26 to the owner-approved mockup: warm ivory surfaces,
+   deep botanical green accent, green-black ink. Semantic architecture is
+   Interfere-derived: surfaces, fg tiers, brand/positive/warning/danger
+   families with solid/subtle/foreground/on-* shapes, hairline borders,
+   border-first elevation. Two layers: base palette -> roles; dark theme is a
+   pure re-pointing of the same role variables.
+   All raw color values in the project live HERE (and base.css) only.
+   ========================================================================= */
+
+:root {
+  /* --- surfaces --- */
+  --c-page: oklch(93.4% 0.004 95); /* studio stone backdrop around the 390px frame */
+  --c-shell: oklch(98.5% 0.0035 95); /* warm white app canvas (clean, not cream) */
+  --c-container: oklch(99.7% 0.0015 95); /* raised near-white surfaces */
+  --c-card: oklch(99.7% 0.0015 95);
+  --c-sunken: oklch(95.5% 0.0045 95); /* wells: composer inset, stage rail */
+  --c-modal: oklch(99.8% 0.0015 95);
+  --c-standout: oklch(21.5% 0.028 165); /* deep green-ink inverted panel (stop screen) */
+  /* ink: the primary ROUND control (mic, voice Done, orb core) — near-black
+     in light, botanical green in dark so it never sinks into the canvas */
+  --c-ink: oklch(21.5% 0.028 165);
+  --c-on-ink: oklch(97% 0.005 130);
+  --c-scrim: rgb(18 22 20 / 0.32);
+  --c-paper: oklch(97.4% 0.011 95); /* document stationery register ONLY */
+
+  /* --- foreground tiers (green-black ink) --- */
+  --c-fg-primary: oklch(20.5% 0.012 165);
+  --c-fg-secondary: oklch(43% 0.011 165);
+  --c-fg-tertiary: oklch(53% 0.009 165);
+  --c-fg-disabled: oklch(70% 0.005 165);
+  --c-fg-on-inverted: oklch(97% 0.005 130);
+  --c-fg-standout-secondary: oklch(80% 0.015 150);
+
+  /* --- neutral component fill --- */
+  --c-component: oklch(97.3% 0.004 95);
+  --c-component-hover: oklch(95.4% 0.0045 95);
+  --c-component-active: oklch(93.3% 0.005 95);
+  --c-hover-veil: rgb(20 28 24 / 0.045);
+  --c-veil-standout: rgb(255 255 255 / 0.09); /* hover veil ON the standout panel (always dark) */
+
+  /* --- brand (the ONE accent: deep botanical green) --- */
+  --c-brand-solid: oklch(38% 0.065 160);
+  --c-brand-solid-hover: oklch(34% 0.065 160);
+  --c-brand-solid-active: oklch(30% 0.06 160);
+  --c-brand-subtle: oklch(95% 0.022 155);
+  --c-brand-subtle-hover: oklch(92.8% 0.028 155);
+  --c-brand-fg: oklch(39% 0.07 160);
+  --c-on-brand-solid: oklch(98.6% 0.005 120);
+  --c-on-brand-subtle: oklch(31% 0.06 160);
+  --c-spark: oklch(70% 0.1 150); /* sage — LOGO MARK ONLY, never a UI accent */
+
+  /* --- positive (teal-leaning green: reads "ok" next to brand "action") --- */
+  --c-positive-solid: oklch(43% 0.075 175);
+  --c-positive-solid-hover: oklch(39% 0.075 175);
+  --c-positive-subtle: oklch(94% 0.024 175);
+  --c-positive-fg: oklch(40% 0.075 175);
+  --c-on-positive-solid: oklch(99% 0 0);
+  --c-on-positive-subtle: oklch(33% 0.06 175);
+
+  /* --- warning (warm ochre) --- */
+  --c-warning-solid: oklch(45% 0.088 75);
+  --c-warning-solid-hover: oklch(41% 0.088 75);
+  --c-warning-subtle: oklch(95.4% 0.034 85);
+  --c-warning-fg: oklch(40% 0.08 70);
+  --c-on-warning-solid: oklch(99% 0 0);
+  --c-on-warning-subtle: oklch(34% 0.075 70);
+
+  /* --- danger (terracotta) --- */
+  --c-danger-solid: oklch(46.5% 0.15 30);
+  --c-danger-solid-hover: oklch(42.5% 0.15 30);
+  --c-danger-subtle: oklch(95.2% 0.026 30);
+  --c-danger-subtle-hover: oklch(93% 0.032 30);
+  --c-danger-fg: oklch(42% 0.14 30);
+  --c-on-danger-solid: oklch(99% 0 0);
+  --c-on-danger-subtle: oklch(37% 0.12 30);
+
+  /* --- borders / lines (border-first elevation) --- */
+  --c-line-default: oklch(90.6% 0.0045 95);
+  --c-line-subtle: oklch(93.6% 0.0035 95);
+  --c-line-strong: oklch(85.5% 0.006 95);
+  --c-line-inverted: oklch(34% 0.03 165);
+  --c-brand-line: oklch(66% 0.06 160);
+  --c-brand-line-subtle: oklch(86% 0.03 155);
+  --c-focus: oklch(50% 0.085 160);
+  --c-positive-line: oklch(70% 0.07 175);
+  --c-warning-line: oklch(79% 0.07 85);
+  --c-danger-line: oklch(70% 0.09 30);
+  --c-danger-line-subtle: oklch(85% 0.05 30);
+
+  /* --- disabled --- */
+  --c-disabled: oklch(94.6% 0.004 95);
+
+  /* --- font stacks (Latin registers; script companions via :lang below) --- */
+  --stk-sans: "Inter Variable", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --stk-mono: "JetBrains Mono Variable", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --stk-serif: "Source Serif 4 Variable", ui-serif, Georgia, serif;
+}
+
+/* --- dark theme "night garden": pure re-pointing of role variables --- */
+[data-theme="dark"] {
+  --c-page: oklch(11% 0.005 165);
+  --c-shell: oklch(16.5% 0.007 165);
+  --c-container: oklch(20.5% 0.008 165);
+  --c-card: oklch(20.5% 0.008 165);
+  --c-sunken: oklch(13.8% 0.006 165);
+  --c-modal: oklch(22% 0.009 165);
+  --c-standout: oklch(24% 0.03 165); /* still darker-and-distinct vs shell in use */
+  --c-ink: oklch(67% 0.1 155);
+  --c-on-ink: oklch(16.5% 0.03 165);
+  --c-scrim: rgb(0 0 0 / 0.62);
+  --c-paper: oklch(95% 0.008 95); /* documents stay paper in dark mode */
+
+  --c-fg-primary: oklch(95.8% 0.008 120);
+  --c-fg-secondary: oklch(74% 0.012 150);
+  --c-fg-tertiary: oklch(60% 0.012 160);
+  --c-fg-disabled: oklch(44% 0.01 165);
+  /* fg-on-inverted + fg-standout-secondary intentionally NOT re-pointed:
+     the standout panel stays deep green-ink in both themes, so its text
+     stays light in both themes. */
+
+  --c-component: oklch(23.5% 0.009 165);
+  --c-component-hover: oklch(26.5% 0.01 165);
+  --c-component-active: oklch(30% 0.011 165);
+  --c-hover-veil: rgb(235 240 236 / 0.055);
+
+  --c-brand-solid: oklch(67% 0.1 155);
+  --c-brand-solid-hover: oklch(71% 0.1 155);
+  --c-brand-solid-active: oklch(63% 0.095 155);
+  --c-brand-subtle: oklch(27% 0.035 165);
+  --c-brand-subtle-hover: oklch(30% 0.04 165);
+  --c-brand-fg: oklch(76% 0.075 150);
+  --c-on-brand-solid: oklch(16.5% 0.03 165);
+  --c-on-brand-subtle: oklch(82% 0.06 150);
+
+  --c-positive-solid: oklch(64% 0.085 175);
+  --c-positive-solid-hover: oklch(68% 0.085 175);
+  --c-positive-subtle: oklch(25% 0.04 175);
+  --c-positive-fg: oklch(73% 0.08 175);
+  --c-on-positive-solid: oklch(16% 0.04 175);
+  --c-on-positive-subtle: oklch(75% 0.07 175);
+
+  --c-warning-solid: oklch(65% 0.1 80);
+  --c-warning-solid-hover: oklch(69% 0.1 80);
+  --c-warning-subtle: oklch(26% 0.04 85);
+  --c-warning-fg: oklch(78% 0.09 80);
+  --c-on-warning-solid: oklch(19% 0.05 80);
+  --c-on-warning-subtle: oklch(76% 0.08 85);
+
+  --c-danger-solid: oklch(59% 0.15 28);
+  --c-danger-solid-hover: oklch(63% 0.15 28);
+  --c-danger-subtle: oklch(25% 0.045 28);
+  --c-danger-subtle-hover: oklch(28.5% 0.05 28);
+  --c-danger-fg: oklch(73% 0.12 28);
+  --c-on-danger-solid: oklch(13% 0.04 28);
+  --c-on-danger-subtle: oklch(71% 0.11 28);
+
+  --c-line-default: oklch(28% 0.008 165);
+  --c-line-subtle: oklch(23.5% 0.007 165);
+  --c-line-strong: oklch(35% 0.009 165);
+  --c-line-inverted: oklch(80% 0.02 130);
+  --c-brand-line: oklch(46% 0.06 160);
+  --c-brand-line-subtle: oklch(33% 0.04 160);
+  --c-focus: oklch(71% 0.09 155);
+  --c-positive-line: oklch(38% 0.06 175);
+  --c-warning-line: oklch(43% 0.06 85);
+  --c-danger-line: oklch(41% 0.09 28);
+  --c-danger-line-subtle: oklch(31% 0.05 28);
+
+  --c-disabled: oklch(22% 0.007 165);
+}
+
+/* ============================================================================
+   Typography per script (A4b). One font family per script; stacks swap via
+   :lang(). NEVER letter-spacing / uppercase / italic / faux bold on these.
+   Root font-size scales per script (documented hypotheses to tune against
+   the specimen route).
+   ========================================================================= */
+:root {
+  font-size: 16px;
+}
+[data-script="devanagari"] {
+  font-size: 17.5px;
+}
+[data-script="bengali"] {
+  font-size: 17.25px;
+}
+[data-script="gurmukhi"] {
+  font-size: 17.25px;
+}
+[data-script="gujarati"] {
+  font-size: 17.25px;
+}
+[data-script="kannada"] {
+  font-size: 17.5px;
+}
+[data-script="malayalam"] {
+  font-size: 17.25px;
+}
+[data-script="odia"] {
+  font-size: 17.25px;
+}
+[data-script="tamil"] {
+  font-size: 17.25px;
+}
+[data-script="telugu"] {
+  font-size: 17.25px;
+}
+[data-script="urdu"] {
+  font-size: 17px;
+}
+[data-script="meetei"] {
+  font-size: 17.25px;
+}
+[data-script="olchiki"] {
+  font-size: 17.25px;
+}
+
+:lang(hi),
+:lang(mr),
+:lang(sa),
+:lang(ne),
+:lang(mai),
+:lang(gom),
+:lang(brx),
+:lang(doi) {
+  --stk-sans: "Noto Sans Devanagari", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --stk-serif: "Noto Serif Devanagari", "Noto Sans Devanagari", "Source Serif 4 Variable", serif;
+  --stk-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+}
+:lang(as),
+:lang(bn) {
+  --stk-sans: "Noto Sans Bengali", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --stk-serif: "Noto Sans Bengali", "Source Serif 4 Variable", serif;
+}
+:lang(gu) {
+  --stk-sans: "Noto Sans Gujarati", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --stk-serif: "Noto Sans Gujarati", "Source Serif 4 Variable", serif;
+}
+:lang(pa) {
+  --stk-sans: "Noto Sans Gurmukhi", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --stk-serif: "Noto Sans Gurmukhi", "Source Serif 4 Variable", serif;
+}
+:lang(kn) {
+  --stk-sans: "Noto Sans Kannada", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --stk-serif: "Noto Sans Kannada", "Source Serif 4 Variable", serif;
+}
+:lang(ml) {
+  --stk-sans: "Noto Sans Malayalam", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --stk-serif: "Noto Sans Malayalam", "Source Serif 4 Variable", serif;
+}
+:lang(or) {
+  --stk-sans: "Noto Sans Oriya", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --stk-serif: "Noto Sans Oriya", "Source Serif 4 Variable", serif;
+}
+:lang(ta) {
+  --stk-sans: "Noto Sans Tamil", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --stk-serif: "Noto Serif Tamil", "Noto Sans Tamil", "Source Serif 4 Variable", serif;
+}
+:lang(te) {
+  --stk-sans: "Noto Sans Telugu", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --stk-serif: "Noto Sans Telugu", "Source Serif 4 Variable", serif;
+}
+:lang(ur),
+:lang(ks),
+:lang(sd) {
+  --stk-sans: "Noto Nastaliq Urdu", "Noto Naskh Arabic", "Inter Variable", ui-sans-serif, sans-serif;
+  --stk-serif: "Noto Naskh Arabic", "Noto Nastaliq Urdu", "Source Serif 4 Variable", serif;
+}
+:lang(mni) {
+  --stk-sans: "Noto Sans Meetei Mayek", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --stk-serif: "Noto Sans Meetei Mayek", "Source Serif 4 Variable", serif;
+}
+:lang(sat) {
+  --stk-sans: "Noto Sans Ol Chiki", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --stk-serif: "Noto Sans Ol Chiki", "Source Serif 4 Variable", serif;
+}
+
+/* ============================================================================
+   Tailwind theme mapping. `inline` so utilities resolve the underlying var
+   at runtime (theme + lang switching without re-compilation).
+   ========================================================================= */
+@theme inline {
+  --color-page: var(--c-page);
+  --color-shell: var(--c-shell);
+  --color-container: var(--c-container);
+  --color-card: var(--c-card);
+  --color-sunken: var(--c-sunken);
+  --color-modal: var(--c-modal);
+  --color-standout: var(--c-standout);
+  --color-ink: var(--c-ink);
+  --color-on-ink: var(--c-on-ink);
+  --color-scrim: var(--c-scrim);
+  --color-paper: var(--c-paper);
+
+  --color-fg-primary: var(--c-fg-primary);
+  --color-fg-secondary: var(--c-fg-secondary);
+  --color-fg-tertiary: var(--c-fg-tertiary);
+  --color-fg-disabled: var(--c-fg-disabled);
+  --color-fg-on-inverted: var(--c-fg-on-inverted);
+  --color-fg-standout-secondary: var(--c-fg-standout-secondary);
+
+  --color-component: var(--c-component);
+  --color-component-hover: var(--c-component-hover);
+  --color-component-active: var(--c-component-active);
+  --color-hover-veil: var(--c-hover-veil);
+  --color-veil-standout: var(--c-veil-standout);
+
+  --color-brand-solid: var(--c-brand-solid);
+  --color-brand-solid-hover: var(--c-brand-solid-hover);
+  --color-brand-solid-active: var(--c-brand-solid-active);
+  --color-brand-subtle: var(--c-brand-subtle);
+  --color-brand-subtle-hover: var(--c-brand-subtle-hover);
+  --color-brand-fg: var(--c-brand-fg);
+  --color-on-brand-solid: var(--c-on-brand-solid);
+  --color-on-brand-subtle: var(--c-on-brand-subtle);
+
+  --color-positive-solid: var(--c-positive-solid);
+  --color-positive-solid-hover: var(--c-positive-solid-hover);
+  --color-positive-subtle: var(--c-positive-subtle);
+  --color-positive-fg: var(--c-positive-fg);
+  --color-on-positive-solid: var(--c-on-positive-solid);
+  --color-on-positive-subtle: var(--c-on-positive-subtle);
+
+  --color-warning-solid: var(--c-warning-solid);
+  --color-warning-solid-hover: var(--c-warning-solid-hover);
+  --color-warning-subtle: var(--c-warning-subtle);
+  --color-warning-fg: var(--c-warning-fg);
+  --color-on-warning-solid: var(--c-on-warning-solid);
+  --color-on-warning-subtle: var(--c-on-warning-subtle);
+
+  --color-danger-solid: var(--c-danger-solid);
+  --color-danger-solid-hover: var(--c-danger-solid-hover);
+  --color-danger-subtle: var(--c-danger-subtle);
+  --color-danger-subtle-hover: var(--c-danger-subtle-hover);
+  --color-danger-fg: var(--c-danger-fg);
+  --color-on-danger-solid: var(--c-on-danger-solid);
+  --color-on-danger-subtle: var(--c-on-danger-subtle);
+
+  --color-line-default: var(--c-line-default);
+  --color-line-subtle: var(--c-line-subtle);
+  --color-line-strong: var(--c-line-strong);
+  --color-line-inverted: var(--c-line-inverted);
+  --color-brand-line: var(--c-brand-line);
+  --color-brand-line-subtle: var(--c-brand-line-subtle);
+  --color-focus: var(--c-focus);
+  --color-positive-line: var(--c-positive-line);
+  --color-warning-line: var(--c-warning-line);
+  --color-danger-line: var(--c-danger-line);
+  --color-danger-line-subtle: var(--c-danger-line-subtle);
+
+  --color-disabled: var(--c-disabled);
+
+  --font-sans: var(--stk-sans);
+  --font-mono: var(--stk-mono);
+  --font-serif: var(--stk-serif);
+}
+
+@theme {
+  /* Interfere radius scale: 2-24 + pill */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+  --radius-3xl: 16px;
+  --radius-4xl: 20px;
+  --radius-5xl: 24px;
+
+  /* border-first elevation; shadows are rare and soft */
+  --shadow-border: 0 0 0 1px var(--c-line-default);
+  --shadow-default: 0 1px 2px rgb(27 42 33 / 0.05), 0 2px 8px rgb(27 42 33 / 0.05);
+  --shadow-large: 0 2px 6px rgb(27 42 33 / 0.06), 0 8px 24px rgb(27 42 33 / 0.08);
+  --shadow-xl: 0 4px 12px rgb(27 42 33 / 0.08), 0 16px 48px rgb(27 42 33 / 0.12);
+
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  /* promoted from arbitrary values (DESIGN-AUDIT P3 text-scale sweep) */
+  --text-sm-plus: 0.9375rem;
+  --text-sm-plus--line-height: 1.5rem;
+  --text-docket: 0.8125rem;
+  --text-docket--line-height: 1.125rem;
+
+  /* Unified spacing scale (4px base) */
+  --spacing-1: 4px;    /* tight */
+  --spacing-2: 8px;    /* standard */
+  --spacing-3: 12px;   /* comfortable */
+  --spacing-4: 16px;   /* section */
+  --spacing-5: 20px;   /* chunk */
+  --spacing-6: 24px;   /* large */
+  --spacing-8: 32px;   /* page */
+  --spacing-10: 40px;  /* hero */
+  --spacing-12: 48px;  /* section break */
+
+  /* Unified border radius scale */
+  --radius-button: 999px;    /* pill buttons */
+  --radius-chip: 8px;        /* chips & small cards */
+  --radius-card: 12px;       /* message bubbles */
+  --radius-section: 16px;    /* modals, drawers */
+  --radius-bleed: 20px;      /* full-width sections */
+
+  /* Enhanced shadow system for depth */
+  --shadow-tiny: 0 1px 2px rgba(27, 42, 33, 0.06), 0 1px 3px rgba(27, 42, 33, 0.04);
+  --shadow-sm: 0 1px 3px rgba(27, 42, 33, 0.08), 0 1px 2px rgba(27, 42, 33, 0.06);
+  --shadow-md: 0 4px 6px rgba(27, 42, 33, 0.08), 0 2px 4px rgba(27, 42, 33, 0.06);
+  --shadow-lg: 0 10px 15px rgba(27, 42, 33, 0.1), 0 4px 6px rgba(27, 42, 33, 0.08);
+  --shadow-xl: 0 20px 25px rgba(27, 42, 33, 0.1), 0 10px 10px rgba(27, 42, 33, 0.04);
+
+  /* Surface gradients for subtle depth */
+  --gradient-surface: linear-gradient(180deg, oklch(98.2% 0.008 100) 0%, oklch(98.6% 0.007 100) 100%);
+  --gradient-depth: linear-gradient(180deg, rgba(27, 42, 33, 0.03) 0%, transparent 100%);
+
+  /* Animation timing - modern spring-like curves */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --transition-fast: 150ms var(--ease-out-soft);
+  --transition-normal: 200ms var(--ease-out-soft);
+  --transition-slow: 300ms var(--ease-in-out-smooth);
+
+  /* Typography scales (semantic — valid Tailwind v4 font-size + line-height pairs) */
+  --text-display-lg: 2rem;
+  --text-display-lg--line-height: 1.15;
+  --text-display-md: 1.6875rem;
+  --text-display-md--line-height: 1.18;
+  --text-title: 1.375rem;
+  --text-title--line-height: 1.24;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.55;
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.4;
+  --text-label: 0.875rem;
+  --text-label--line-height: 1.4;
+
+  /* Touch target minimums */
+  --touch-target: 44px;    /* WCAG 2.1 AA minimum */
+  --touch-target-large: 56px;    /* Preferred for primary actions */
+}

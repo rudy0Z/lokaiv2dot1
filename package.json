@@ -1,0 +1,51 @@
+{
+  "name": "lokai",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "LokAI 2.0 — AI legal-information companion for Indian citizens (portfolio prototype, mock data only)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "verify": "node scripts/verify.mjs",
+    "gates": "node scripts/verify.mjs && tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@base-ui-components/react": "^1.0.0-rc.0",
+    "@fontsource-variable/inter": "^5.2.5",
+    "@fontsource-variable/jetbrains-mono": "^5.2.5",
+    "@fontsource-variable/source-serif-4": "^5.2.5",
+    "@fontsource/noto-naskh-arabic": "^5.2.5",
+    "@fontsource/noto-nastaliq-urdu": "^5.2.5",
+    "@fontsource/noto-sans-bengali": "^5.3.0",
+    "@fontsource/noto-sans-devanagari": "^5.2.5",
+    "@fontsource/noto-sans-gujarati": "^5.3.0",
+    "@fontsource/noto-sans-gurmukhi": "^5.3.0",
+    "@fontsource/noto-sans-kannada": "^5.3.0",
+    "@fontsource/noto-sans-malayalam": "^5.3.0",
+    "@fontsource/noto-sans-meetei-mayek": "^5.3.0",
+    "@fontsource/noto-sans-ol-chiki": "^5.3.0",
+    "@fontsource/noto-sans-oriya": "^5.3.0",
+    "@fontsource/noto-sans-tamil": "^5.2.5",
+    "@fontsource/noto-sans-telugu": "^5.3.0",
+    "@fontsource/noto-serif-devanagari": "^5.3.0",
+    "@fontsource/noto-serif-tamil": "^5.3.0",
+    "clsx": "^2.1.1",
+    "motion": "^12.23.24",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "sonner": "^2.0.3",
+    "tailwind-merge": "^3.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.17",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "tailwindcss": "^4.1.17",
+    "typescript": "~5.9.2",
+    "vite": "^6.3.5"
+  }
+}
